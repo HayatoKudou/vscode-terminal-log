@@ -18,10 +18,30 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:fileExplorer"
+		"onView:nodeDependencies"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"commands": [
+			{
+				"command": "nodeDependencies.addEntry",
+				"title": "Add"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+				  "command": "nodeDependencies.addEntry",
+				  "when": "view == nodeDependencies"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+			  "view": "nodeDependencies",
+			  "contents": "No node dependencies found [learn more](https://www.npmjs.com/).\n[Add Dependency](command:nodeDependencies.addEntry)"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -29,21 +49,20 @@
 					"title": "メモ",
 					"icon": "media/memo.svg"
 				}
+			],
+			"panel": [
+				{
+					"id": "package-explorer",
+					"title": "Package Explorer",
+					"icon": "media/dep.svg"
+				}
 			]
 		},
 		"views": {
 			"package-explorer": [
 				{
 					"id": "nodeDependencies",
-					"name": "Node Dependencies",
-					"icon": "media/memo.svg",
-					"contextualTitle": "メモ"
-				}
-			],
-			"explorer": [
-				{
-					"id": "fileExplorer",
-					"name": "File Explorer"
+					"name": "メモ"
 				}
 			]
 		}
