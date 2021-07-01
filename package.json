@@ -1,10 +1,10 @@
 {
-	"name": "vscode-terminal-capture",
+	"name": "vscode_terminal_memo",
 	"displayName": "Terminal Memo",
-	"description": "  Take an open terminal's output and open it in a tab to quickly navigate and edit the output.",
+	"description": "ターミナル出力をファイルにアウトプット",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/mikekwright/vscode-terminal-capture"
+		"url": "https://github.com/HayatoKudou/vscode_terminal_memo"
 	},
 	"version": "0.0.1",
 	"publisher": "devwright",
