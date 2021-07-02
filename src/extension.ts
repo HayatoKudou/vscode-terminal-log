@@ -1,17 +1,12 @@
 import * as vscode from 'vscode';
 
-let terminalData = {};
+const terminalData = {};
+let myStatusBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
-	const options = vscode.workspace.getConfiguration('terminalMemo');
-	terminalData = {};
 
-	if (!options.get('enable')) {
-		vscode.window.showWarningMessage('ターミナルキャプチャが無効になっています。');
-		return;
-	} else {
-		vscode.window.showInformationMessage("ターミナルキャプチャを開始しました。",);
-	}
+	const options = vscode.workspace.getConfiguration('terminalLog');
+	const quickPick = 'terminalLog.quickPick';
 
 	if (!options.get('useClipboard')) {
 		vscode.window.terminals.forEach(t => {
@@ -23,10 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}
 
-	context.subscriptions.push(vscode.commands.registerCommand('extension.terminalMemo.runCapture', () => {
-		if (!options.get('enable')) {
-			vscode.window.showWarningMessage('ターミナルキャプチャが無効になっています。');
-		}
+	context.subscriptions.push(vscode.commands.registerCommand('extension.terminalLog.pasteLog', () => {
 
 		const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
 		if (terminals.length <= 0) {
@@ -40,17 +32,29 @@ export function activate(context: vscode.ExtensionContext) {
 			runCacheMode();
 		}
 	}));
-}
 
-export function deactivate() {
-	terminalData = {};
+	context.subscriptions.push(vscode.commands.registerCommand(quickPick, () => {
+		const item1: vscode.QuickPickItem = { label: "TerminalLog", description: "Paste the entire terminal" };
+		const item2: vscode.QuickPickItem = { label: "TerminalComandLog", description: "Paste the command used in the terminal" };
+		vscode.window.showQuickPick([item1, item2]).then((selected) => {
+			if (selected.label === 'TerminalLog') {
+				vscode.commands.executeCommand('extension.terminalLog.pasteLog');
+			}
+		});
+	}));
+
+	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+	myStatusBarItem.command = quickPick;
+	myStatusBarItem.text = 'Terminal Log';
+	context.subscriptions.push(myStatusBarItem);
+	myStatusBarItem.show();
 }
 
 
 function runCacheMode() {
 	const terminal = vscode.window.activeTerminal;
 	if (terminal === undefined) {
-		vscode.window.showWarningMessage('アクティブな端末が見つかりません。');
+		vscode.window.showWarningMessage('The active terminal cannot be found.');
 		return;
 	}
 
@@ -58,7 +62,7 @@ function runCacheMode() {
 		vscode.commands.executeCommand('workbench.action.files.newUntitledFile').then(() => {
 			const editor = vscode.window.activeTextEditor;
 			if (editor === undefined) {
-				vscode.window.showWarningMessage('アクティブなエディターが見つかりません。');
+				vscode.window.showWarningMessage('The active editor cannot be found.');
 				return;
 			}
 
@@ -69,7 +73,6 @@ function runCacheMode() {
 		});
 	});
 }
-
 
 function runClipboardMode() {
 	vscode.commands.executeCommand('workbench.action.terminal.selectAll').then(() => {
