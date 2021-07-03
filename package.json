@@ -24,18 +24,7 @@
 				"command": "extension.terminalLog.pasteLog",
 				"title": "Terminal: Log"
 			}
-		],
-		"configuration": {
-			"title": "Terminal Log",
-			"type": "object",
-			"properties": {
-				"terminalLog.useClipboard": {
-					"type": "boolean",
-					"description": "falseの場合、すべての履歴を追跡するキャッシュモードを使用",
-					"default": true
-				}
-			}
-		}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
