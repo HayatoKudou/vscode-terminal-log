@@ -4,7 +4,6 @@ let myStatusBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
 
-	const options = vscode.workspace.getConfiguration('terminalLog');
 	const quickPick = 'terminalLog.quickPick';
 	context.subscriptions.push(vscode.commands.registerCommand('extension.terminalLog.pasteLog', () => {
 
@@ -21,8 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showQuickPick([item1, item2]).then((selected) => {
 			if (selected.label === 'Terminal Output Log') {
 				pasteLog();
-			} else if(selected.label === 'Terminal Command Log'){
-				pasteCommandLog();
+			} else if (selected.label === 'Terminal Command Log') {
+				const item1: vscode.QuickPickItem = { label: "100 Commands", description: "Paste the 100 commands used in the terminal" };
+				const item2: vscode.QuickPickItem = { label: "All Commands", description: "Paste all the command used in the terminal" };
+				const item3: vscode.QuickPickItem = { label: "Delete History Commands", description: "Delete command history" };
+				vscode.window.showQuickPick([item1, item2, item3]).then((selected) => {
+					if (selected.label === '100 Commands' || selected.label === 'All Commands') {
+						getHistory(selected.label);
+
+					} else if (selected.label === 'Delete History Commands') {
+						deleteHistory();
+					}
+				});
 			}
 		});
 	}));
@@ -46,30 +55,49 @@ function pasteLog() {
 	});
 }
 
-function pasteCommandLog() {
+function getHistory(selected_label: string) {
+	let command = '';
+	if (selected_label === '100 Commands') {
+		command = 'history 100';
+	} else {
+		command = 'history';
+	}
 	vscode.commands.executeCommand('workbench.action.terminal.newInActiveWorkspace').then(() => {
-		vscode.commands.executeCommand('workbench.action.terminal.sendSequence', {text: 'history'}).then(() => {
-			vscode.commands.executeCommand('workbench.action.terminal.runSelectedText').then(() => {
-				const countUp = () => {
-					vscode.commands.executeCommand('workbench.action.terminal.selectAll').then(() => {
-						vscode.commands.executeCommand('workbench.action.terminal.copySelection').then(() => {
-							// vscode.env.clipboard.readText().then((text)=>{
-							// 	console.log(text);
-							// 	const history_text = text.match(/[a-c]/gi);
-							// });
-							// vscode.env.clipboard.writeText(text);
-							vscode.commands.executeCommand('workbench.action.terminal.clearSelection').then(() => {
-								vscode.commands.executeCommand('workbench.action.files.newUntitledFile').then(() => {
-									vscode.commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
-										vscode.commands.executeCommand('workbench.action.terminal.kill');
+		vscode.commands.executeCommand('workbench.action.terminal.clear').then(() => {
+			vscode.commands.executeCommand('workbench.action.terminal.sendSequence', { text: command }).then(() => {
+				vscode.commands.executeCommand('workbench.action.terminal.runSelectedText').then(() => {
+					const countUp = () => {
+						vscode.commands.executeCommand('workbench.action.terminal.selectToPreviousCommand').then(() => {
+							vscode.commands.executeCommand('workbench.action.terminal.copySelection').then(() => {
+								vscode.commands.executeCommand('workbench.action.terminal.clearSelection').then(() => {
+									vscode.commands.executeCommand('workbench.action.files.newUntitledFile').then(() => {
+										vscode.commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
+											vscode.commands.executeCommand('workbench.action.terminal.kill');
+										});
 									});
 								});
 							});
 						});
-					});
-				};
-				setTimeout(countUp, 1500);
+					};
+					if (selected_label === '100 Commands') {
+						setTimeout(countUp, 500);
+					} else if (selected_label === 'All Commands') {
+						setTimeout(countUp, 1000);
+					}
+				});
 			});
 		});
 	});
 }
+
+
+function deleteHistory() {
+	vscode.commands.executeCommand('workbench.action.terminal.newInActiveWorkspace').then(() => {
+		vscode.commands.executeCommand('workbench.action.terminal.sendSequence', { text: 'history  -c' }).then(() => {
+			vscode.commands.executeCommand('workbench.action.terminal.runSelectedText').then(() => {
+				vscode.commands.executeCommand('workbench.action.terminal.kill');
+			});
+		});
+	});
+}
+
